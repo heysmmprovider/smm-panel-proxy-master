@@ -94,42 +94,13 @@ This is the **master proxy server** that manages a distributed network of IPv6 p
 
 ## 📦 Installation
 
-### Option 1: Using Docker (Recommended) 🐳
+### Prerequisites
 
-```bash
-# Pull the master proxy image
-docker pull heysmmprovider/smm-panel-proxy-master
+- ✅ Node.js 14+ installed
+- ✅ Ports 8080 (proxy) and 3000 (WebSocket) available
+- ✅ At least one slave connector ready to connect
 
-# Run the master proxy
-docker run -d \
-  --name smm-master-proxy \
-  -p 8080:8080 \
-  -p 3000:3000 \
-  -e PROXY_PORT=8080 \
-  -e WS_PORT=3000 \
-  heysmmprovider/smm-panel-proxy-master
-```
-
-**Docker Hub:** [https://hub.docker.com/r/heysmmprovider/smm-panel-proxy-master](https://hub.docker.com/r/heysmmprovider/smm-panel-proxy-master)
-
-### Option 2: Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  master-proxy:
-    image: heysmmprovider/smm-panel-proxy-master
-    container_name: smm-master-proxy
-    ports:
-      - "8080:8080"  # Proxy port for users
-      - "3000:3000"  # WebSocket port for slaves
-    environment:
-      - PROXY_PORT=8080
-      - WS_PORT=3000
-    restart: unless-stopped
-```
-
-### Option 3: Manual Installation
+### Recommended: Manual Installation
 
 ```bash
 # Clone the repository
@@ -154,8 +125,14 @@ npm start
 ### Step 1: Deploy the Master Proxy
 
 ```bash
-# Quick deploy with Docker
-docker run -d --name smm-master -p 8080:8080 -p 3000:3000 heysmmprovider/smm-panel-proxy-master
+# Clone and install the master proxy
+git clone https://github.com/heysmmprovider/smm-panel-proxy-master.git
+cd smm-panel-proxy-master
+npm install
+
+# Configure and start
+cp .env.example .env
+npm start
 ```
 
 ### Step 2: Connect Slave Nodes
@@ -163,12 +140,17 @@ docker run -d --name smm-master -p 8080:8080 -p 3000:3000 heysmmprovider/smm-pan
 On each IPv6 server, deploy the slave connector:
 
 ```bash
-# On IPv6 servers
-docker run -d \
-  --name ipv6-slave \
-  --network host \
-  -e PROXY_SERVER=ws://master-server-ip:3000 \
-  heysmmprovider/smm-panel-ipv6-proxy
+# On IPv6 servers (manual installation)
+git clone https://github.com/heysmmprovider/smm-panel-ipv6-proxy.git
+cd smm-panel-ipv6-proxy
+npm install
+
+# Configure to connect to your master
+cp .env.example .env
+# Edit .env and set PROXY_SERVER=ws://master-server-ip:3000
+
+# Start the slave
+npm start
 ```
 
 ### Step 3: Configure Your SMM Panel
@@ -243,6 +225,67 @@ Add more slave nodes for increased capacity:
 - ✅ DDoS protection ready
 - ✅ Slave node verification
 - ✅ Connection timeout management
+
+---
+
+## ⚠️ Docker Support (Not Yet Available)
+
+### 🐳 Docker Status: UNTESTED - LIKELY NOT WORKING
+
+**Important Notice:** While Docker images are automatically deployed to Docker Hub during our CI/CD process, **the Docker functionality has NOT been tested and is probably not working correctly**. 
+
+We strongly recommend **NOT using Docker** for deployment at this time. Please use the manual installation method described above instead.
+
+### Why Docker Isn't Ready:
+- ❌ Docker configuration has not been tested
+- ❌ Port mapping and networking may have issues
+- ❌ Environment variable handling is unverified
+- ❌ WebSocket connections through Docker are untested
+- ❌ The automatic Docker Hub deployment is part of CI/CD but doesn't mean it's functional
+
+### Docker Hub Information:
+- **Docker Hub:** [https://hub.docker.com/r/heysmmprovider/smm-panel-proxy-master](https://hub.docker.com/r/heysmmprovider/smm-panel-proxy-master)
+- **Status:** Images are published automatically but NOT TESTED
+- **Recommendation:** DO NOT USE until testing is complete
+
+### If You Want to Try Docker (At Your Own Risk):
+
+```bash
+# THIS IS PROBABLY NOT WORKING - NOT RECOMMENDED
+# Only shown for reference - use manual installation instead!
+
+# Pull the master proxy image
+docker pull heysmmprovider/smm-panel-proxy-master
+
+# Attempt to run (LIKELY WILL NOT WORK PROPERLY)
+docker run -d \
+  --name smm-master-proxy \
+  -p 8080:8080 \
+  -p 3000:3000 \
+  -e PROXY_PORT=8080 \
+  -e WS_PORT=3000 \
+  heysmmprovider/smm-panel-proxy-master
+
+# Docker Compose (ALSO UNTESTED - NOT RECOMMENDED)
+```
+
+```yaml
+# docker-compose.yml - FOR REFERENCE ONLY - NOT TESTED
+version: '3.8'
+services:
+  master-proxy:
+    image: heysmmprovider/smm-panel-proxy-master
+    container_name: smm-master-proxy
+    ports:
+      - "8080:8080"  # Proxy port for users
+      - "3000:3000"  # WebSocket port for slaves
+    environment:
+      - PROXY_PORT=8080
+      - WS_PORT=3000
+    restart: unless-stopped
+```
+
+**⚠️ We will update this README once Docker support has been properly tested and verified. Until then, please use the manual installation method for reliable deployment.**
 
 ---
 
